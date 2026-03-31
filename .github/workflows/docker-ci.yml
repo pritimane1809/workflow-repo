@@ -45,7 +45,7 @@ jobs:
         run: |
           curl -X POST -H "Content-type: application/json" \
     --data "{\"text\":\"✅ Image pushed: ${{ inputs.image_name }}:${{ inputs.tag }}\"}" \
-    "${{ secrets.SLACK_URL }}"
+    "${{ secrets.SLACK_WEBHOOK_URL }}"
 
       - name: Slack Failure
         if: failure()
