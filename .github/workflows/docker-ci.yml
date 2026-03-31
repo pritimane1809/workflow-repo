@@ -1,0 +1,55 @@
+name: Docker CI with Security & Slack
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+      SLACK_WEBHOOK:
+        required: true
+
+jobs:
+  build-scan-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login Docker
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Image
+        run: docker build -t ${{ inputs.image_name }}:${{ inputs.tag }} .
+
+      - name: Scan Image (Trivy)
+        uses: aquasecurity/trivy-action@0.21.0
+        with:
+          image-ref: ${{ inputs.image_name }}:${{ inputs.tag }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+      - name: Push Image
+        run: docker push ${{ inputs.image_name }}:${{ inputs.tag }}
+
+      - name: Slack Success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"✅ Image pushed: ${{ inputs.image_name }}:${{ inputs.tag }}"}' \
+          ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Slack Failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"❌ Pipeline failed: ${{ github.repository }}"}' \
+          ${{ secrets.SLACK_WEBHOOK }}
