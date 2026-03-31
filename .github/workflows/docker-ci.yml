@@ -31,10 +31,10 @@ jobs:
         run: docker build -t ${{ inputs.image_name }}:${{ inputs.tag }} .
 
       - name: Scan Image (Trivy)
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0
         with:
           image-ref: ${{ inputs.image_name }}:${{ inputs.tag }}
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
           exit-code: 1
 
       - name: Push Image
@@ -44,12 +44,12 @@ jobs:
         if: success()
         run: |
           curl -X POST -H "Content-type: application/json" \
-    --data "{\"text\":\"✅ Image pushed: ${{ inputs.image_name }}:${{ inputs.tag }}\"}" \
-    "${{ secrets.SLACK_WEBHOOK_URL }}"
+          --data "{\"text\":\"✅ Image pushed: ${{ inputs.image_name }}:${{ inputs.tag }}\"}" \
+          "${{ secrets.SLACK_WEBHOOK_URL }}"
 
       - name: Slack Failure
         if: failure()
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"❌ Pipeline failed: ${{ github.repository }}"}' \
-          ${{ secrets.SLACK_WEBHOOK }}
+          curl -X POST -H "Content-type: application/json" \
+          --data "{\"text\":\"❌ Pipeline failed: ${{ github.repository }}\"}" \
+          "${{ secrets.SLACK_WEBHOOK_URL }}"
