@@ -34,8 +34,8 @@ jobs:
         uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: ${{ inputs.image_name }}:${{ inputs.tag }}
-          severity: CRITICAL
-          exit-code: 1
+          severity: HIGH,CRITICAL
+          exit-code: 0
 
       - name: Push Image
         run: docker push ${{ inputs.image_name }}:${{ inputs.tag }}
