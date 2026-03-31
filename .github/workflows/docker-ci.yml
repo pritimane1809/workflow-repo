@@ -31,7 +31,7 @@ jobs:
         run: docker build -t ${{ inputs.image_name }}:${{ inputs.tag }} .
 
       - name: Scan Image (Trivy)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@main
         with:
           image-ref: ${{ inputs.image_name }}:${{ inputs.tag }}
           severity: HIGH,CRITICAL
